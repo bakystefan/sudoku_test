@@ -1,127 +1,83 @@
 import cloneDeep from 'lodash/cloneDeep';
 import flatten from 'lodash/flatten';
-import range from 'lodash/range';
-import includes from 'lodash/includes';
+import * as _ from 'lodash';
 
-const VALUES = range(1, 10);
-const DIM = range(0, 9);
-const ZERO = 0;
-
-const getRow = (grid, rowNum) => {
-	if (!contains(DIM, rowNum)) {
-		throw new Error('rowNum not in range');
-	}
-	return grid[rowNum];
+const checkDuplicates = numbers => {
+	const withoutZeros = numbers.filter(item => {if(item != 0) return item});
+	return _.uniq(withoutZeros).length !== withoutZeros.length;
 }
 
-const getCol = (grid, colNum) => {
-	if (!contains(DIM, colNum)) {
-		throw new Error('colNum not in range');
-	}
-	return grid.map((row) => row[colNum]);
-}
-
-const getSquare = (grid, rowNum, colNum) => {
-	if (!contains(DIM, rowNum) || !contains(DIM, colNum)) {
-		throw new Error('rowNum or colNum are not in range');
-	}
-	let rowStart = rowNum - (rowNum % 3); // uppermost row index of the box
-	let colStart = colNum - (colNum % 3); // leftmost col index of the box
-	let result = [];
-	for (let i = 0; i < 3; i++) {
-		result[i] = result[i] || [];
-		for (let j = 0; j < 3; j++) {
-			result[i].push(grid[rowStart + i][colStart + j]);
+const checkRow = (grid) => {
+	let duplicate = false;
+	for(let i = 0; i <= 8; i++) {
+		const row = grid[i];
+		if(checkDuplicates(row)) {
+			duplicate = true;
+			break;
 		}
 	}
-	return flatten(result);
+	return duplicate;
 }
 
-/*
-	sudoku constraints checker
-	- unique in its row
-	- unique in its column
-	- unique in its box
-*/ 
-const check = (grid, number, rowNum, colNum) => {
-	if (!contains(DIM, rowNum) || !contains(DIM, colNum)) {
-		throw new Error('rowNum or colNum are not in range');
+const checkColumn = (grid) => {
+	let duplicate = false;
+	for(let i = 0; i <= 8; i++) {
+		const column = grid[i].filter(item => item[0]);
+		if(checkDuplicates(column))
+			duplicate = true;
+			break;
 	}
+	return duplicate;
+}
 
-	if (!contains(VALUES, number)) {
-		throw new Error('number is not in range');
+const checkBox = (grid) => {
+	let counterRow = 0;
+	let counterCol = 0;
+	let duplicate = false;
+	for(let i = 0; i <= 8; i++) {
+		const box = [];
+		for(let row = 0; row <= 2; row++) {
+			for(let col = 0; col <= 2; col++) {
+				box.push(grid[row+counterRow*3][col+counterCol*3]);
+			}
+		}
+		if(counterCol == 2) {
+			counterCol = 0;
+			if(counterRow == 2) {
+				counterRow = 0;
+			} else {
+				counterRow++;
+			}
+		} else {
+			counterCol++;
+		}
+		if(checkDuplicates(box)) {
+			duplicate = true;
+			break;
+		}
 	}
+	return duplicate;
+}
 
-	let row = getRow(grid, rowNum);
-	let column = getCol(grid, colNum);
-	let square = getSquare(grid, rowNum, colNum);
-
-	if (!contains(row, number) && !contains(column, number) && !contains(square, number)) {
+export const solver2 = (grid) => {
+	if(checkRow(grid)) {
+		alert('Error: Row contains duplicate numbers');
 		return true;
 	}
-
-	return false;
-}
-
-/*
-	starts from 0x0 and moves left to right and row by row to 9x9
-*/
-const getNext = (rowNum = 0, colNum = 0) => {
-	return colNum !== 8 ? [rowNum, colNum + 1] :
-		rowNum !== 8 ? [rowNum + 1, 0] :
-		[0, 0];
-}
-
-/*
-	Recursive formula that starts from [0, 0] and check
-	all the possbile values for empty boxes until it reaches
-	the end of the grid and returns true
-	or else if the grid is not solvable, it will return false
-*/
-export const solver = (grid, rowNum = 0, colNum = 0) => {
-	if (contains(DIM, rowNum) < 0 || contains(DIM, colNum) < 0) {
-		throw new Error('rowNum or colNum are not in range');
+	if(checkColumn(grid)) {
+		alert('Error: Column contains duplicate numbers');
+		return true;
 	}
-	let isLast = (rowNum >= 8 && colNum >= 8);
-
-	/* if the box is not empty, run the solver on the next box */
-	if (grid[rowNum][colNum] !== ZERO && !isLast) {
-		let [nextRowNum, nextColNum] = getNext(rowNum, colNum);
-		return solver(grid, nextRowNum, nextColNum);
+	if(checkBox(grid)) {
+		alert('Error: One of the nine 3x3 subgrids that compose the grid contains duplicate numbers')
+		return true;
 	}
-	/*
-		if the box is empty, check to see out of numbers 1 to 9,
-		which one satisfies all three sudoko constraints
-	*/ 
-	for (let i = 1; i <= 9; i++) {
-		if (check(grid, i, rowNum, colNum)) {
-			grid[rowNum][colNum] = i;
-			let [nextRowNum, nextColNum] = getNext(rowNum, colNum);
-			/*
-				runs the solver recusively until it sucessfully
-				reaches to the end of the grid, box 9x9
-			*/
-			if (!nextRowNum && !nextColNum) { // at index [8, 8], next would be [0, 0]
-				return true;
-			}
-			if (solver(grid, nextRowNum, nextColNum)) {
-				return true;
-			}
-		}
-	}
-
-	/*
-		if the loop could not solve and return the function,
-		false will be retuened which indicates the sudoku is not solvable.
-		resets the current state back to 0 allow for further tries
-	*/
-	grid[rowNum][colNum] = ZERO;
-	return false;
+	return false;	
 }
 
 export const isSolvable = (grid) => {
 	let clonedGrid = cloneDeep(grid);
-	return solver(clonedGrid);
+	return solver2(clonedGrid);
 }
 
 /*

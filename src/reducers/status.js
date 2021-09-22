@@ -14,11 +14,6 @@ export function status(state = cloneDeep(initialState), action) {
 			return extend({}, state, {isSolved: true, isEdited: true});
 		case 'CLEAR':
 			return extend({}, state, {isSolved: false, isEdited: false});
-		case 'UNDO':
-			if (!window.gridHistory.length) {
-				return extend({}, state, {isEdited: false}); 
-			}
-			return state;
 		default:
 			return state;
 	}

@@ -1,7 +1,6 @@
 import React from 'react';
 import Grid from './components/Grid';
-import { solver, isSolvable, isComplete } from './utils/sudoku';
-import { solve, clear, undo} from './actions/grid';
+import { isSolvable, isComplete } from './utils/sudoku';
 
 /* Application Container Component */
 const App = React.createClass({
@@ -14,53 +13,28 @@ const App = React.createClass({
 		this.unsubscribe();
 	},
 	render() {
-		const {store} = this.props;
-		const {grid, status} = store.getState();
-		const {isSolved, isEdited} = status;
+		const { store } = this.props;
+		const { grid, status } = store.getState();
+		const { isSolved } = status;
 		return (
 			<div>
-				<button
-					className='undo'
-					disabled={window.gridHistory && !window.gridHistory.length}
-					onClick={() => store.dispatch(undo())}
-				>
-					⤺ Undo
-				</button>
-				<button
-					className='clear'
-					disabled={!isEdited}
-					onClick={() => store.dispatch(clear())}
-				>
-					⟲ Clear
-				</button>
-
 				<Grid grid={grid} status={status} {...this.props}/>
 
 				<button
 					className='check'
 					disabled={isSolved}
 					onClick={() => {
-						if (isSolvable(grid)) {
-							if (isComplete(grid)) {
-								return alert('Congratulations, you solved it!!');
+						if (isComplete(grid)) {
+							if (!isSolvable(grid)) {
+								return alert('Completed!');
 							}
-							alert('This Sudoku is solvable, keep going !!');
 						} else {
-							alert('This Sudoku is NOT solvable');
-						}					
+							isSolvable(grid);
+						}
 					}}
 				>
 					Check
 				</button>
-				<button
-					className='solve'
-					onClick={() => store.dispatch(solve())}
-				>
-					Solve
-				</button>			
-				<div className='footnote'>
-					<p>by <a href='http://danialk.github.io/'> Danial Khosravi </a> </p>
-				</div>				
 			</div>
 
 		);
