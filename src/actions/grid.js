@@ -3,9 +3,11 @@
 export function inputValue(row, col, val) {
 	return {
 		type: 'INPUT_VALUE',
-		row,
-		col,
-		val
+		payload: {
+			row,
+			col,
+			val
+		}
 	};
 }
 

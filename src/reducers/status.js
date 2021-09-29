@@ -6,8 +6,8 @@ const initialState = {
 	isEdited: false
 };
 
-export function status(state = cloneDeep(initialState), action) {
-	switch (action.type) {
+export default (state = cloneDeep(initialState), { type, payload }) => {
+	switch (type) {
 		case 'INPUT_VALUE':
 			return extend({}, state, {isEdited: true});
 		case 'SOLVE':

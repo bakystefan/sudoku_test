@@ -1,5 +1,4 @@
 import cloneDeep from 'lodash/cloneDeep';
-import { default as extend } from 'lodash/assignIn';
 import { solver } from '../utils/sudoku';
 
 const initialState = [
@@ -15,10 +14,10 @@ const initialState = [
 ];
 
 
-export function grid(state = cloneDeep(initialState), action) {
-	switch (action.type) {
+export default (state = cloneDeep(initialState), { type, payload }) => {
+	switch (type) {
 		case 'INPUT_VALUE':
-			let { row, col, val } = action;
+			let { row, col, val } = payload;
 			let changedRow = [
 				...state[row].slice(0, col),
 				val,
@@ -36,4 +35,5 @@ export function grid(state = cloneDeep(initialState), action) {
 		default:
 			return state;
 	}
+
 }

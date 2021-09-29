@@ -14,12 +14,15 @@ module.exports = {
 		publicPath: '/static/'
 	},
 	plugins: [
-		new webpack.HotModuleReplacementPlugin()
+		new webpack.HotModuleReplacementPlugin(),
+		 new webpack.DefinePlugin({
+			'__DEV__': true
+		  })
 	],
 	module: {
 		loaders: [{
 			test: /\.js$/,
-			loaders: ['react-hot', 'babel'],
+			loaders: ['babel', 'babel-loader'],
 			include: path.join(__dirname, 'src')
 		}]
 	}
